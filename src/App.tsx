@@ -1,14 +1,15 @@
-import React, { useState } from "react";
-import "./App.css"; // or wherever you have your custom CSS
-import "./index.css"; // Tailwind base, components, utilities
+import React, { useState, useEffect } from "react";
+import { EventContract, CreateEventInput, getCurrentBalance, getTotalReceivedTokens } from "./lib/utils"
+
+interface Event {
+  id: number;
+  title: string;
+  date: string;
+  location: string;
+}
 
 function App() {
-  const [events, setEvents] = useState([
-    { id: 1, title: "Welcome Party", date: "2025-03-01", location: "Main Hall" },
-    { id: 2, title: "Karaoke Night", date: "2025-03-05", location: "Music Hall" },
-    { id: 3, title: "Board Game Marathon", date: "2025-03-10", location: "Community Room" },
-    { id: 4, title: "Open Mic Night", date: "2025-03-15", location: "Cafeteria Stage" },
-  ]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [showSignupModal, setShowSignupModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
@@ -17,7 +18,22 @@ function App() {
   const [newEventDate, setNewEventDate] = useState("");
   const [newEventLocation, setNewEventLocation] = useState("");
 
-  const handleSignupOpen = (event: any) => {
+  useEffect(() => {
+    async function fetchEvents() {
+      const activeContracts = await EventContract.getActiveContracts();
+      const fetchedEvents = activeContracts.map((contract, index) => ({
+        id: index + 1,
+        title: contract.getDetails().name,
+        date: contract.getDetails().eventStartTime.toISOString().split('T')[0],
+        location: "Blockchain Venue", // Assuming location is not provided by the contract
+      }));
+      setEvents(fetchedEvents);
+    }
+
+    fetchEvents();
+  }, []);
+
+  const handleSignupOpen = (event: Event) => {
     setSelectedEvent(event);
     setShowSignupModal(true);
   };
