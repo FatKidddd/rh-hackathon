@@ -62,90 +62,130 @@ const WelfareRedemptionProfile: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-100 text-gray-800">
-      <header className="bg-white shadow-md p-6">
-        <div className="container mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-blue-600">Welfare Benefits</h1>
-          <a
-            href="/"
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all duration-200 flex items-center gap-2"
-          >
-            <span>←</span> Back to Home
-          </a>
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      {/* Header - Consistent with App.tsx */}
+      <header className="bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg">
+        <div className="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
+          <div className="flex items-center gap-8">
+            <h1 className="text-2xl font-bold text-white tracking-tight">
+              Uni Hall Events
+            </h1>
+            {/* Navigation links */}
+            <nav className="flex gap-6">
+              <a
+                href="/"
+                className="text-white/70 hover:text-white transition-colors duration-200"
+              >
+                Events
+              </a>
+              <a
+                href="/welfare"
+                className="text-white font-medium"
+              >
+                Welfare
+              </a>
+            </nav>
+          </div>
+          
+          {/* User section - matches App.tsx */}
+          <div className="flex items-center gap-4">
+            <span className="text-white">
+              Welcome, <span className="font-medium">{user.name}</span>
+            </span>
+            <button
+              onClick={() => window.location.href = '/'}
+              className="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 
+                       transition-colors duration-200 text-sm font-medium"
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-6xl">
-        {/* User Info Section */}
-        <section className="bg-white shadow-lg rounded-lg p-8 mb-8 transform hover:scale-[1.01] transition-transform duration-200">
-          <h2 className="text-xl font-semibold mb-6 text-blue-600">Profile Information</h2>
+      <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-12">
+        {/* Profile Section */}
+        <div className="flex items-center justify-between mb-10">
+          <div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-1">
+              Your Profile
+            </h2>
+            <p className="text-gray-600">Manage your welfare benefits</p>
+          </div>
+        </div>
+
+        {/* Profile Info Card */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-500 mb-1">User ID</p>
-              <p className="font-medium">{user.id}</p>
+            <div>
+              <label className="text-sm text-gray-500">User ID</label>
+              <p className="font-medium text-gray-900">{user.id}</p>
             </div>
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-500 mb-1">Name</p>
-              <p className="font-medium">{user.name}</p>
+            <div>
+              <label className="text-sm text-gray-500">Name</label>
+              <p className="font-medium text-gray-900">{user.name}</p>
             </div>
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-500 mb-1">Email</p>
-              <p className="font-medium">{user.email}</p>
+            <div>
+              <label className="text-sm text-gray-500">Email</label>
+              <p className="font-medium text-gray-900">{user.email}</p>
             </div>
           </div>
-        </section>
+        </div>
 
-        {/* Available Welfare Items */}
-        <section className="bg-white shadow-lg rounded-lg p-8">
-          <h2 className="text-xl font-semibold mb-6 text-blue-600">Available Benefits</h2>
-          {welfareItems.length > 0 ? (
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-              {welfareItems.map((item) => (
-                <div
-                  key={item.id}
-                  className={`rounded-lg p-6 transition-all duration-200 flex flex-col h-full ${
-                    item.redeemed 
-                      ? "bg-gray-50 border border-gray-200" 
-                      : "bg-white shadow-md hover:shadow-xl"
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-lg">{item.name}</h3>
-                    {item.redeemed && (
-                      <span className="px-3 py-1 bg-green-100 text-green-600 text-sm rounded-full">
-                        Redeemed
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-gray-600 mb-6 flex-grow">{item.description}</p>
-                  <button
-                    onClick={() => handleRedeem(item.id)}
-                    disabled={item.redeemed}
-                    className={`w-full py-3 rounded-lg font-medium transition-all duration-200 ${
-                      item.redeemed
-                        ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                        : "bg-blue-500 hover:bg-blue-600 text-white transform hover:-translate-y-1"
-                    }`}
-                  >
-                    {item.redeemed ? "Already Redeemed" : "Redeem Now"}
-                  </button>
+        {/* Welfare Items Section */}
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-1">Available Benefits</h2>
+          <p className="text-gray-600">Redeem your welfare items</p>
+        </div>
+
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          {welfareItems.map((item) => (
+            <div
+              key={item.id}
+              className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 
+                        overflow-hidden border border-gray-100 flex flex-col"
+            >
+              <div className="p-6 border-b border-gray-100 flex-1">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-xl font-semibold text-gray-900">{item.name}</h3>
+                  {item.redeemed && (
+                    <span className="px-3 py-1 bg-green-100 text-green-700 text-sm rounded-full">
+                      Redeemed
+                    </span>
+                  )}
                 </div>
-              ))}
+                <p className="text-gray-600">{item.description}</p>
+              </div>
+              <div className="p-6 mt-auto">
+                <button
+                  onClick={() => handleRedeem(item.id)}
+                  disabled={item.redeemed}
+                  className={`w-full px-4 py-3 text-sm rounded-lg font-medium transition-colors duration-200
+                    ${item.redeemed 
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                      : 'bg-purple-600 text-white hover:bg-purple-700'}`}
+                >
+                  {item.redeemed ? 'Already Redeemed' : 'Redeem Now'}
+                </button>
+              </div>
             </div>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-gray-500 text-lg">No available welfare items at the moment.</p>
-            </div>
-          )}
+          ))}
+        </div>
 
-          {/* Notification Toast */}
-          {showNotification && (
-            <div className="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg animate-fade-in-up">
-              {notificationMessage}
-            </div>
-          )}
-        </section>
+        {/* Notification Toast */}
+        {showNotification && (
+          <div className="fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg">
+            {notificationMessage}
+          </div>
+        )}
       </main>
+
+      {/* Footer */}
+      <footer className="bg-white border-t border-gray-200 py-8">
+        <div className="max-w-7xl mx-auto px-6 text-center text-gray-500">
+          <p>&copy; {new Date().getFullYear()} Uni Hall Events. All rights reserved.</p>
+        </div>
+      </footer>
     </div>
   );
 };
