@@ -217,7 +217,7 @@ function App() {
                 <input
                   type="text"
                   required
-                  className="block w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:ring bg-white"
                 />
               </div>
               <div>
@@ -225,7 +225,7 @@ function App() {
                 <input
                   type="email"
                   required
-                  className="block w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:ring bg-white"
                 />
               </div>
               <button
@@ -269,6 +269,7 @@ function App() {
                   type="text"
                   value={newEventTitle}
                   onChange={(e) => setNewEventTitle(e.target.value)}
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:ring bg-white"
                   required
                   className="block w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
@@ -279,6 +280,7 @@ function App() {
                   type="date"
                   value={newEventDate}
                   onChange={(e) => setNewEventDate(e.target.value)}
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:ring bg-white"
                   required
                   className="block w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
@@ -289,6 +291,7 @@ function App() {
                   type="text"
                   value={newEventLocation}
                   onChange={(e) => setNewEventLocation(e.target.value)}
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:ring bg-white"
                   required
                   className="block w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
