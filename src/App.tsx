@@ -1,38 +1,49 @@
 import React, { useState, useEffect } from "react";
-import { EventContract, CreateEventInput, getCurrentBalance, getTotalReceivedTokens } from "./lib/utils"
+import { EventContract } from "./lib/utils";
 
-interface Event {
-  id: number;
-  title: string;
-  date: string;
-  location: string;
+interface EventDetails {
+  name: string;
+  description: string;
+  maxCapacity: number;
+  signupStartTime: Date;
+  signupEndTime: Date;
+  eventStartTime: Date;
+  eventEndTime: Date;
+  rewardCost: number;
+  attendeeCount: number;
 }
 
 function App() {
-  const [events, setEvents] = useState([
-    { id: 1, title: "Welcome Party", date: "2025-03-01", location: "Main Hall" },
-    { id: 2, title: "Karaoke Night", date: "2025-03-05", location: "Music Hall" },
-    { id: 3, title: "Board Game Marathon", date: "2025-03-10", location: "Community Room" },
-    { id: 4, title: "Open Mic Night", date: "2025-03-15", location: "Cafeteria Stage" },
-  ]);
+  const [events, setEvents] = useState<EventDetails[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showSignupModal, setShowSignupModal] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<any>(null);
-
-  const[user, setUser] = useState<any>(null);
-
-  // Create event
+  const [selectedEvent, setSelectedEvent] = useState<EventDetails | null>(null);
+  const [user, setUser] = useState<any>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
-
-  // Auth modals
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showUserSignupModal, setShowUserSignupModal] = useState(false);
-
-  // States for new event creation
   const [newEventTitle, setNewEventTitle] = useState("");
   const [newEventDate, setNewEventDate] = useState("");
   const [newEventLocation, setNewEventLocation] = useState("");
 
-  const handleSignupOpen = (event: any) => {
+  useEffect(() => {
+    async function fetchEvents() {
+      try {
+        const activeEvents = await EventContract.getActiveContracts();
+        const eventDetailsPromises = activeEvents.map(eventContract => eventContract.getDetails());
+        const eventDetails = await Promise.all(eventDetailsPromises);
+        setEvents(eventDetails);
+      } catch (error) {
+        console.error("Failed to fetch events:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchEvents();
+  }, []);
+
+  const handleSignupOpen = (event: EventDetails) => {
     setSelectedEvent(event);
     setShowSignupModal(true);
   };
@@ -42,14 +53,27 @@ function App() {
     setSelectedEvent(null);
   };
 
-  const handleSignupSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSignupSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Here you'd call your signup for event API
-    console.log("Signed up for event:", selectedEvent);
-    setShowSignupModal(false);
+    if (!selectedEvent) return;
+
+    try {
+      const eventContract = await EventContract.getContract(selectedEvent.contractAddress);
+      const hasSignedUp = await eventContract.hasSignedUp();
+      if (hasSignedUp) {
+        alert("You have already signed up for this event.");
+        return;
+      }
+
+      await eventContract.signUp("User metadata");
+      alert("Successfully signed up for the event!");
+      setShowSignupModal(false);
+    } catch (error) {
+      console.error("Failed to sign up for the event:", error);
+      alert("Failed to sign up for the event.");
+    }
   };
 
-  // ---- Create New Event Logic ----
   const handleCreateModalOpen = () => {
     setShowCreateModal(true);
   };
@@ -76,7 +100,6 @@ function App() {
     setShowCreateModal(false);
   };
 
-  // ---- Mock Login Logic ----
   const handleLoginOpen = () => {
     setShowLoginModal(true);
   };
@@ -87,12 +110,10 @@ function App() {
 
   const handleLoginSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Mock login success
     setUser({ id: "user_12345", name: "John Doe" });
     setShowLoginModal(false);
   };
 
-  // ---- Mock Signup (User) Logic ----
   const handleUserSignupOpen = () => {
     setShowUserSignupModal(true);
   };
@@ -103,24 +124,23 @@ function App() {
 
   const handleUserSignupSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Mock signup success
     setUser({ id: "user_54321", name: "Jane Doe" });
     setShowUserSignupModal(false);
   };
 
-  // ---- Logout (Optional) ----
   const handleLogout = () => {
     setUser(null);
   };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800">
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-4 bg-white shadow">
-        {/* Left side (Brand / Title) */}
         <h1 className="text-xl font-bold">Uni Hall Events</h1>
-
-        {/* Right side (Auth buttons or user info) */}
         <div className="space-x-4">
           {user ? (
             <>
@@ -155,10 +175,8 @@ function App() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        {/* Create Event Button + Title */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold">Upcoming Events</h2>
-          {/* Show "Create Event" button if user is logged in (optional) */}
           <button
             onClick={handleCreateModalOpen}
             className="px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white text-sm"
@@ -169,10 +187,10 @@ function App() {
 
         <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {events.map((event) => (
-            <div key={event.id} className="bg-white rounded-lg shadow p-4 flex flex-col">
-              <h3 className="text-md font-semibold mb-2">{event.title}</h3>
-              <p className="text-sm text-gray-500 mb-1">Date: {event.date}</p>
-              <p className="text-sm text-gray-500 mb-4">Location: {event.location}</p>
+            <div key={event.name} className="bg-white rounded-lg shadow p-4 flex flex-col">
+              <h3 className="text-md font-semibold mb-2">{event.name}</h3>
+              <p className="text-sm text-gray-500 mb-1">Date: {event.eventStartTime.toDateString()}</p>
+              <p className="text-sm text-gray-500 mb-4">Location: {event.description}</p>
               <button
                 onClick={() => handleSignupOpen(event)}
                 className="px-3 py-2 text-sm rounded bg-blue-500 text-white hover:bg-blue-600"
@@ -184,33 +202,19 @@ function App() {
         </div>
       </main>
 
-      {/* ----------- Modals ----------- */}
-
-      {/* --- 1. Event Signup Modal --- */}
-      {showSignupModal && (
+      {/* Modals */}
+      {showSignupModal && selectedEvent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
           <div className="bg-white rounded-lg shadow p-6 w-full max-w-md relative">
             <button
               onClick={handleSignupClose}
               className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
             >
-              <svg
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M6 18L18 6M6 6l12 12"
-                />
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            <h2 className="text-lg font-bold mb-4">
-              Sign Up for {selectedEvent?.title}
-            </h2>
+            <h2 className="text-lg font-bold mb-4">Sign Up for {selectedEvent.name}</h2>
             <form onSubmit={handleSignupSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Name</label>
@@ -228,10 +232,7 @@ function App() {
                   className="block w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-              >
+              <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
                 Submit
               </button>
             </form>
@@ -239,7 +240,6 @@ function App() {
         </div>
       )}
 
-      {/* --- 2. Create Event Modal --- */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
           <div className="bg-white rounded-lg shadow p-6 w-full max-w-md relative">
@@ -247,18 +247,8 @@ function App() {
               onClick={handleCreateModalClose}
               className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
             >
-              <svg
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M6 18L18 6M6 6l12 12"
-                />
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
             <h2 className="text-lg font-bold mb-4">Create New Event</h2>
@@ -293,10 +283,7 @@ function App() {
                   className="block w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-              >
+              <button type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
                 Create
               </button>
             </form>
@@ -304,7 +291,6 @@ function App() {
         </div>
       )}
 
-      {/* --- 3. Mock Login Modal --- */}
       {showLoginModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
           <div className="bg-white rounded-lg shadow p-6 w-full max-w-md relative">
@@ -312,18 +298,8 @@ function App() {
               onClick={handleLoginClose}
               className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
             >
-              <svg
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M6 18L18 6M6 6l12 12"
-                />
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
             <h2 className="text-lg font-bold mb-4">Login</h2>
@@ -344,10 +320,7 @@ function App() {
                   className="block w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-              >
+              <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
                 Login
               </button>
             </form>
@@ -355,7 +328,6 @@ function App() {
         </div>
       )}
 
-      {/* --- 4. Mock User Signup Modal --- */}
       {showUserSignupModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
           <div className="bg-white rounded-lg shadow p-6 w-full max-w-md relative">
@@ -363,18 +335,8 @@ function App() {
               onClick={handleUserSignupClose}
               className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
             >
-              <svg
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M6 18L18 6M6 6l12 12"
-                />
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
             <h2 className="text-lg font-bold mb-4">Sign Up</h2>
@@ -403,10 +365,7 @@ function App() {
                   className="block w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
               </div>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-              >
+              <button type="submit" className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
                 Sign Up
               </button>
             </form>
