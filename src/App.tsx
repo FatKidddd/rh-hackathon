@@ -1,22 +1,24 @@
-import React, { useState } from "react";
-import "./App.css"; // or wherever you have your custom CSS
-import "./index.css"; // Tailwind base, components, utilities
+import React, { useState, useEffect } from "react";
+import { EventContract, CreateEventInput, getCurrentBalance, getTotalReceivedTokens } from "./lib/utils"
+
+interface Event {
+  id: number;
+  title: string;
+  date: string;
+  location: string;
+}
 
 function App() {
-  // Mock user object or null if not logged in
-  const [user, setUser] = useState<any>(null);
-
-  // Event data
   const [events, setEvents] = useState([
     { id: 1, title: "Welcome Party", date: "2025-03-01", location: "Main Hall" },
     { id: 2, title: "Karaoke Night", date: "2025-03-05", location: "Music Hall" },
     { id: 3, title: "Board Game Marathon", date: "2025-03-10", location: "Community Room" },
     { id: 4, title: "Open Mic Night", date: "2025-03-15", location: "Cafeteria Stage" },
   ]);
-
-  // Sign-up for events
   const [showSignupModal, setShowSignupModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
+
+  const[user, setUser] = useState<any>(null);
 
   // Create event
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -30,7 +32,6 @@ function App() {
   const [newEventDate, setNewEventDate] = useState("");
   const [newEventLocation, setNewEventLocation] = useState("");
 
-  // ---- Event Signup Logic ----
   const handleSignupOpen = (event: any) => {
     setSelectedEvent(event);
     setShowSignupModal(true);
