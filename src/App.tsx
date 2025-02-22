@@ -40,45 +40,45 @@ function App() {
   // ----------------------
   //  1. Fetch Active Events from On-Chain
   // // ----------------------
-  // useEffect(() => {
-  //   async function fetchEvents() {
-  //     try {
-  //       const activeContracts = await EventContract.getActiveContracts();
-  //       // For each contract, fetch the event details
-  //       const eventDetailsPromises = activeContracts.map(async (contractInstance: any) => {
-  //         const details = await contractInstance.getDetails();
+  useEffect(() => {
+    async function fetchEvents() {
+      try {
+        const activeContracts = await EventContract.getActiveContracts();
+        // For each contract, fetch the event details
+        const eventDetailsPromises = activeContracts.map(async (contractInstance: any) => {
+          const details = await contractInstance.getDetails();
           
-  //         // Make sure 'details' matches the EventDetails interface
-  //         // For example, if getDetails() returns something like:
-  //         // {
-  //         //   name,
-  //         //   description,
-  //         //   maxCapacity,
-  //         //   signupStartTime,
-  //         //   signupEndTime,
-  //         //   eventStartTime,
-  //         //   eventEndTime,
-  //         //   rewardCost,
-  //         //   attendeeCount
-  //         // }
-  //         // then we also add the contract's address so we can sign up later
-  //         return {
-  //           ...details,
-  //           contractAddress: contractInstance.address,
-  //         } as EventDetails;
-  //       });
+          // Make sure 'details' matches the EventDetails interface
+          // For example, if getDetails() returns something like:
+          // {
+          //   name,
+          //   description,
+          //   maxCapacity,
+          //   signupStartTime,
+          //   signupEndTime,
+          //   eventStartTime,
+          //   eventEndTime,
+          //   rewardCost,
+          //   attendeeCount
+          // }
+          // then we also add the contract's address so we can sign up later
+          return {
+            ...details,
+            contractAddress: contractInstance.address,
+          } as EventDetails;
+        });
 
-  //       const fetchedEvents = await Promise.all(eventDetailsPromises);
-  //       setEvents(fetchedEvents);
-  //     } catch (error) {
-  //       console.error("Failed to fetch events:", error);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   }
+        const fetchedEvents = await Promise.all(eventDetailsPromises);
+        setEvents(fetchedEvents);
+      } catch (error) {
+        console.error("Failed to fetch events:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
 
-  //   fetchEvents();
-  // }, []);
+    fetchEvents();
+  }, []);
 
   // ----------------------
   //  2. Sign-Up Modal Logic
@@ -186,9 +186,6 @@ function App() {
     setUser(null);
   };
 
-  // ----------------------
-  //  5. Render: Loading?
-  // ----------------------
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-700">
@@ -197,13 +194,8 @@ function App() {
     );
   }
 
-  // ----------------------
-  //  6. Main UI
-  // ----------------------
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800">
-      kasjndkNKDNAKSNDKJNDSD
-      {/* Header */}
       <header className="flex items-center justify-between px-6 py-4 bg-white shadow">
         <h1 className="text-xl font-bold">Uni Hall Events</h1>
         <div className="space-x-4">
