@@ -125,7 +125,7 @@ function App() {
           {user ? (
             <>
               <span className="text-gray-700">
-                Logged in as <strong>{user.id}</strong>
+                Logged in as <a href="/profile"><strong>{user.id}</strong></a>
               </span>
               <button
                 onClick={handleLogout}
