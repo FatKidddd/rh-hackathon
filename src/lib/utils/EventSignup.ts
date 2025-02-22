@@ -1,6 +1,6 @@
 import { ContractTransactionReceipt, ethers, EthersError, EventLog } from "ethers";
 import { EventFactoryContract, signer } from "../PolygonContext";
-import contractABI from "../contracts/EventSignup.sol/EventSignup.json";
+import { eventSignupABI } from "../contracts/EventSignup";
 
 export interface EventDetails {
   name: string;
@@ -38,7 +38,7 @@ export class EventContract {
 
   static async getContract(addr: string): Promise<EventContract> {
     try {
-      const contract = new ethers.Contract(addr, contractABI.abi, signer);
+      const contract = new ethers.Contract(addr, eventSignupABI, signer);
       const eventDetails = await contract.eventDetails();
 
       const event = {
@@ -110,7 +110,7 @@ export class EventContract {
     }
 
     const deployedAddress: string = eventLog.args[0];
-    const contract = new ethers.Contract(deployedAddress, contractABI.abi, signer);
+    const contract = new ethers.Contract(deployedAddress, eventSignupABI, signer);
     const details: EventDetails = { ...eventDetails, attendeeCount: 0 }
 
     return new EventContract(details, contract, deployedAddress);
