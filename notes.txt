@@ -1,0 +1,18 @@
+create new contract events - will have 100 tokens, then only 100 people can sign up
+
+UIs
+
+Events Page
+- View all events
+- Create event
+- Sign Up
+
+Redeem Welfare Page
+- View all items
+- Redeem 
+
+User Page
+- Profile - some simple user details + tokens
+
+
+Hard code accounts
