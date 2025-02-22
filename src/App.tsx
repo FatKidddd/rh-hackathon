@@ -1,67 +1,58 @@
-import { useState } from "react";
+import React, { useState } from "react";
+
+interface Event {
+  id: number;
+  title: string;
+  date: string;
+  location: string;
+}
 
 function App() {
-  // Sample events to show on the landing page
-  const [events, setEvents] = useState([
+  const [events, setEvents] = useState<Event[]>([
     { id: 1, title: "Welcome Party", date: "2025-03-01", location: "Main Hall" },
     { id: 2, title: "Karaoke Night", date: "2025-03-05", location: "Music Hall" },
     { id: 3, title: "Board Game Marathon", date: "2025-03-10", location: "Community Room" },
     { id: 4, title: "Open Mic Night", date: "2025-03-15", location: "Cafeteria Stage" },
   ]);
 
-  // State for showing/hiding the sign-up modal & create-event modal
   const [showSignupModal, setShowSignupModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
-
-  // Stores which event is currently selected for sign-up
-  const [selectedEvent, setSelectedEvent] = useState<any>(null);
-
-  // Temporary fields for the "Create Event" form
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [newEventTitle, setNewEventTitle] = useState("");
   const [newEventDate, setNewEventDate] = useState("");
   const [newEventLocation, setNewEventLocation] = useState("");
 
-  // Handle sign-up modal open
-  const handleSignupOpen = (event: any) => {
+  const handleSignupOpen = (event: Event) => {
     setSelectedEvent(event);
     setShowSignupModal(true);
   };
 
-  // Handle sign-up modal close
   const handleSignupClose = () => {
     setShowSignupModal(false);
     setSelectedEvent(null);
   };
 
-  // Handle form submission for sign-up
-  const handleSignupSubmit = (e: any) => {
+  const handleSignupSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // You can process the sign-up data here, e.g., send to your backend
     console.log("Signed up for event:", selectedEvent);
     setShowSignupModal(false);
   };
 
-  // Handle create-event modal open/close
   const handleCreateModalOpen = () => setShowCreateModal(true);
   const handleCreateModalClose = () => setShowCreateModal(false);
 
-  // Handle form submission for creating a new event
-  const handleCreateEventSubmit = (e: any) => {
+  const handleCreateEventSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Basic form check
     if (!newEventTitle || !newEventDate || !newEventLocation) return;
 
-    const newEvent = {
+    const newEvent: Event = {
       id: events.length + 1,
       title: newEventTitle,
       date: newEventDate,
       location: newEventLocation,
     };
 
-    // Add new event to state
     setEvents([...events, newEvent]);
-
-    // Clear inputs and close modal
     setNewEventTitle("");
     setNewEventDate("");
     setNewEventLocation("");
@@ -70,7 +61,6 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800">
-      {/* Navigation / Header */}
       <header className="flex items-center justify-between px-8 py-4 bg-white shadow-sm">
         <h1 className="text-2xl font-bold">Uni Hall Events</h1>
         <button
@@ -81,7 +71,6 @@ function App() {
         </button>
       </header>
 
-      {/* Events Grid */}
       <main className="max-w-6xl mx-auto py-8">
         <h2 className="text-xl font-semibold mb-4">Upcoming Events</h2>
         <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
@@ -106,7 +95,6 @@ function App() {
         </div>
       </main>
 
-      {/* Sign Up Modal */}
       {showSignupModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40">
           <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
@@ -128,7 +116,7 @@ function App() {
                 />
               </svg>
             </button>
-            <h3 className="text-xl font-bold mb-4">Sign Up for {selectedEvent?.title as any}</h3>
+            <h3 className="text-xl font-bold mb-4">Sign Up for {selectedEvent?.title}</h3>
             <form onSubmit={handleSignupSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Name</label>
@@ -157,7 +145,6 @@ function App() {
         </div>
       )}
 
-      {/* Create Event Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40">
           <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
