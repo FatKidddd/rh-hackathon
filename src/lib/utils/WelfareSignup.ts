@@ -1,6 +1,6 @@
 import { ContractTransactionReceipt, ethers, EthersError, EventLog } from "ethers";
 import { WelfareFactoryContract, signer, TokenContract } from "../PolygonContext";
-import contractABI from "../contracts/WelfareSignup.sol/WelfareSignup.json";
+import { welfareSignupABI } from "../contracts/WelfareSignup";
 
 export interface WelfareDetails {
   name: string;
@@ -36,7 +36,7 @@ export class WelfareContract {
 
   static async getContract(addr: string): Promise<WelfareContract> {
     try {
-      const contract = new ethers.Contract(addr, contractABI.abi, signer);
+      const contract = new ethers.Contract(addr, welfareSignupABI, signer);
       const welfareDetails = await contract.welfareDetails();
 
       const welfare = {
@@ -107,7 +107,7 @@ export class WelfareContract {
     }
 
     const deployedAddress: string = welfareLog.args[0];
-    const contract = new ethers.Contract(deployedAddress, contractABI.abi, signer);
+    const contract = new ethers.Contract(deployedAddress, welfareSignupABI, signer);
     const details = { ...welfareDetails, attendeeCount: 0 }
     return new WelfareContract(details, contract, deployedAddress);
   }
