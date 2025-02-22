@@ -1,12 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { EventContract } from "./lib/utils";
 
-/** 
- * Extended interface to match what your contract returns.
- * Make sure to include contractAddress since you need it for sign-up calls.
- */
 interface EventDetails {
-  contractAddress: string;  // <- Important for handleSignupSubmit
+  contractAddress: string;
   name: string;
   description: string;
   maxCapacity: number;
@@ -38,30 +34,14 @@ function App() {
   const [newEventLocation, setNewEventLocation] = useState("");
 
   // ----------------------
-  //  1. Fetch Active Events from On-Chain
-  // // ----------------------
+  //  1. Fetch Active Events (On-Chain or Mock)
+  // ----------------------
   useEffect(() => {
     async function fetchEvents() {
       try {
         const activeContracts = await EventContract.getActiveContracts();
-        // For each contract, fetch the event details
         const eventDetailsPromises = activeContracts.map(async (contractInstance: any) => {
           const details = await contractInstance.getDetails();
-          
-          // Make sure 'details' matches the EventDetails interface
-          // For example, if getDetails() returns something like:
-          // {
-          //   name,
-          //   description,
-          //   maxCapacity,
-          //   signupStartTime,
-          //   signupEndTime,
-          //   eventStartTime,
-          //   eventEndTime,
-          //   rewardCost,
-          //   attendeeCount
-          // }
-          // then we also add the contract's address so we can sign up later
           return {
             ...details,
             contractAddress: contractInstance.address,
@@ -81,7 +61,7 @@ function App() {
   }, []);
 
   // ----------------------
-  //  2. Sign-Up Modal Logic
+  //  2. Sign-Up Logic
   // ----------------------
   const handleSignupOpen = (event: EventDetails) => {
     setSelectedEvent(event);
@@ -98,16 +78,13 @@ function App() {
     if (!selectedEvent) return;
 
     try {
-      // Retrieve the contract using the selected event's address
       const eventContract = await EventContract.getContract(selectedEvent.contractAddress);
-
       const hasSignedUp = await eventContract.hasSignedUp();
       if (hasSignedUp) {
         alert("You have already signed up for this event.");
         return;
       }
 
-      // Pass in user details or relevant metadata
       await eventContract.signUp("User metadata");
       alert("Successfully signed up for the event!");
       setShowSignupModal(false);
@@ -118,36 +95,22 @@ function App() {
   };
 
   // ----------------------
-  //  3. Create New Event Modal Logic (Mock / Partial)
-  //     In a real app, you'd call a contract function like:
-  //     await EventContract.createEvent(...required params...)
+  //  3. Create New Event Logic (Mocked)
   // ----------------------
-  const handleCreateModalOpen = () => {
-    setShowCreateModal(true);
-  };
-
-  const handleCreateModalClose = () => {
-    setShowCreateModal(false);
-  };
+  const handleCreateModalOpen = () => setShowCreateModal(true);
+  const handleCreateModalClose = () => setShowCreateModal(false);
 
   const handleCreateEventSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!newEventTitle || !newEventDate || !newEventLocation) return;
 
-    // In reality, you'd do something like:
-    // await EventContract.createEvent({
-    //   name: newEventTitle,
-    //   description: "",
-    //   ...
-    // });
-    // For now, just mock push:
     const newMockEvent: EventDetails = {
       contractAddress: "mock_contract_address_" + (events.length + 1),
       name: newEventTitle,
       description: newEventLocation,
       maxCapacity: 100,
       signupStartTime: new Date(),
-      signupEndTime: new Date(newEventDate),  // example
+      signupEndTime: new Date(newEventDate),
       eventStartTime: new Date(newEventDate),
       eventEndTime: new Date(newEventDate),
       rewardCost: 0,
@@ -186,6 +149,9 @@ function App() {
     setUser(null);
   };
 
+  // ----------------------
+  //  Loading State
+  // ----------------------
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-700">
@@ -194,52 +160,65 @@ function App() {
     );
   }
 
+  // ----------------------
+  //  Render
+  // ----------------------
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800">
-      <header className="flex items-center justify-between px-6 py-4 bg-white shadow">
-        <h1 className="text-xl font-bold">Uni Hall Events</h1>
-        <div className="space-x-4">
-          {user ? (
-            <>
-              <span className="text-gray-700">
-                Logged in as{" "}
-                <a href="/profile" className="underline text-blue-500 hover:text-blue-700">
-                  <strong>{user.id}</strong>
-                </a>
-              </span>
-              <button
-                onClick={handleLogout}
-                className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
-              >
-                Logout
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={handleLoginOpen}
-                className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
-              >
-                Login
-              </button>
-              <button
-                onClick={handleUserSignupOpen}
-                className="px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
-              >
-                Signup
-              </button>
-            </>
-          )}
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      {/* Gradient Header */}
+      <header className="bg-gradient-to-r from-blue-600 to-indigo-600 shadow">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+          <h1 className="text-xl font-bold text-white tracking-wide">
+            Uni Hall Events
+          </h1>
+          <div className="space-x-4">
+            {user ? (
+              <>
+                <span className="text-white">
+                  Logged in as{" "}
+                  <a
+                    href="/profile"
+                    className="underline font-medium hover:text-gray-200"
+                  >
+                    {user.id}
+                  </a>
+                </span>
+                <button
+                  onClick={handleLogout}
+                  className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={handleLoginOpen}
+                  className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                >
+                  Login
+                </button>
+                <button
+                  onClick={handleUserSignupOpen}
+                  className="px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
+                >
+                  Signup
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold">Upcoming Events</h2>
+      <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-8">
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-semibold text-gray-700">
+            Upcoming Events
+          </h2>
           <button
             onClick={handleCreateModalOpen}
-            className="px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white text-sm"
+            className="px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium"
           >
             Create Event
           </button>
@@ -250,45 +229,52 @@ function App() {
           <p className="text-gray-600">No events found.</p>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {events.map((event) => (
-              <div
-                key={event.contractAddress + event.name}
-                className="bg-white rounded-lg shadow p-4 flex flex-col"
-              >
-                <h3 className="text-md font-semibold mb-2">{event.name}</h3>
-                <p className="text-sm text-gray-500 mb-1">
-                  Description: {event.description}
-                </p>
-                <p className="text-sm text-gray-500 mb-1">
-                  Capacity: {event.attendeeCount} / {event.maxCapacity}
-                </p>
-                <p className="text-sm text-gray-500 mb-1">
-                  Signups: {event.signupStartTime.toLocaleString()} -{" "}
-                  {event.signupEndTime.toLocaleString()}
-                </p>
-                <p className="text-sm text-gray-500 mb-1">
-                  Event: {event.eventStartTime.toLocaleString()} -{" "}
-                  {event.eventEndTime.toLocaleString()}
-                </p>
-                <p className="text-sm text-gray-500 mb-4">
-                  Reward Cost: {event.rewardCost}
-                </p>
+          {events.map((event) => (
+            <div
+              key={event.contractAddress + event.name}
+              className="relative flex flex-col bg-white border-l-4 border-blue-500 rounded-md shadow-sm p-4 
+                        transition-transform duration-200 transform hover:-translate-y-1 hover:shadow-md"
+            >
+              {/* Title */}
+              <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                {event.name}
+              </h3>
 
-                <button
-                  onClick={() => handleSignupOpen(event)}
-                  className="px-3 py-2 text-sm rounded bg-blue-500 text-white hover:bg-blue-600"
-                >
-                  Sign Up
-                </button>
+              {/* Description */}
+              <p className="text-sm text-gray-500 leading-tight mb-2">
+                {event.description}
+              </p>
+
+              {/* Info Block */}
+              <div className="text-sm text-gray-600 space-y-1">
+                <p><b>Capacity</b>: {event.attendeeCount} / {event.maxCapacity}</p>
+                <p><b>Signups</b>: {event.signupStartTime.toLocaleString()} – {event.signupEndTime.toLocaleString()}</p>
+                <p><b>Events</b>: {event.eventStartTime.toLocaleString()} – {event.eventEndTime.toLocaleString()}</p>
+                <p><b>Reward Cost</b>: {event.rewardCost}</p>
               </div>
-            ))}
+
+              {/* Sign Up Button */}
+              <button
+                onClick={() => handleSignupOpen(event)}
+                className="mt-4 inline-block px-4 py-2 text-sm bg-blue-500 
+                          text-white rounded hover:bg-blue-600 transition-colors"
+              >
+                Sign Up
+              </button>
+            </div>
+          ))}
           </div>
         )}
       </main>
 
-      {/* -------------------- Modals -------------------- */}
+      {/* FOOTER (Optional) */}
+      <footer className="bg-gray-100 py-4">
+        <div className="max-w-6xl mx-auto px-4 text-center text-sm text-gray-500">
+          &copy; {new Date().getFullYear()} Uni Hall Events
+        </div>
+      </footer>
 
-      {/* 1) Sign-up Modal */}
+      {/* -------------------- Modals Below -------------------- */}
       {showSignupModal && selectedEvent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
           <div className="bg-white rounded-lg shadow p-6 w-full max-w-md relative">
@@ -296,7 +282,12 @@ function App() {
               onClick={handleSignupClose}
               className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
             >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -305,11 +296,11 @@ function App() {
                 />
               </svg>
             </button>
-            <h2 className="text-lg font-bold mb-4">Sign Up for {selectedEvent.name}</h2>
-            <p className="text-sm text-gray-600 mb-2">
+            <h2 className="text-lg font-bold mb-2">Sign Up for {selectedEvent.name}</h2>
+            <p className="text-sm text-gray-600 mb-4">
               Event starts on {selectedEvent.eventStartTime.toLocaleString()}
             </p>
-            <form onSubmit={handleSignupSubmit} className="space-y-4 mt-4">
+            <form onSubmit={handleSignupSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Name</label>
                 <input
@@ -339,7 +330,6 @@ function App() {
         </div>
       )}
 
-      {/* 2) Create Event Modal (mock) */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
           <div className="bg-white rounded-lg shadow p-6 w-full max-w-md relative">
@@ -347,7 +337,12 @@ function App() {
               onClick={handleCreateModalClose}
               className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
             >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -402,7 +397,6 @@ function App() {
         </div>
       )}
 
-      {/* 3) Login Modal */}
       {showLoginModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
           <div className="bg-white rounded-lg shadow p-6 w-full max-w-md relative">
@@ -410,7 +404,12 @@ function App() {
               onClick={handleLoginClose}
               className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
             >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -426,7 +425,7 @@ function App() {
                 <input
                   type="email"
                   required
-                  className="block w-full border border-gray-300 rounded px-3 py-2
+                  className="block w-full border border-gray-300 rounded px-3 py-2 
                              focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
@@ -435,7 +434,7 @@ function App() {
                 <input
                   type="password"
                   required
-                  className="block w-full border border-gray-300 rounded px-3 py-2
+                  className="block w-full border border-gray-300 rounded px-3 py-2 
                              focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
@@ -450,7 +449,6 @@ function App() {
         </div>
       )}
 
-      {/* 4) User Signup Modal */}
       {showUserSignupModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
           <div className="bg-white rounded-lg shadow p-6 w-full max-w-md relative">
@@ -458,7 +456,12 @@ function App() {
               onClick={handleUserSignupClose}
               className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
             >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -474,7 +477,7 @@ function App() {
                 <input
                   type="text"
                   required
-                  className="block w-full border border-gray-300 rounded px-3 py-2
+                  className="block w-full border border-gray-300 rounded px-3 py-2 
                              focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
               </div>
@@ -483,7 +486,7 @@ function App() {
                 <input
                   type="email"
                   required
-                  className="block w-full border border-gray-300 rounded px-3 py-2
+                  className="block w-full border border-gray-300 rounded px-3 py-2 
                              focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
               </div>
@@ -492,7 +495,7 @@ function App() {
                 <input
                   type="password"
                   required
-                  className="block w-full border border-gray-300 rounded px-3 py-2
+                  className="block w-full border border-gray-300 rounded px-3 py-2 
                              focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
               </div>
